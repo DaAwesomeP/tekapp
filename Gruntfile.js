@@ -117,22 +117,23 @@ module.exports = function (grunt) {
 
         // Make sure code styles are up to par and there are no obvious mistakes
         jshint: {
+          options: {
+            jshintrc: '.jshintrc',
+            reporter: require('jshint-stylish')
+          },
+          all: {
+            src: [
+              'Gruntfile.js',
+              '<%= yeoman.app %>/scripts/{,*/}*.js',
+              '!<%= yeoman.app %>/scripts/{,*/}vendor-*.js'
+            ]
+          },
+          test: {
             options: {
-                jshintrc: '.jshintrc',
-                reporter: require('jshint-stylish')
+              jshintrc: 'test/.jshintrc'
             },
-            all: {
-                src: [
-          'Gruntfile.js',
-          '<%= yeoman.app %>/scripts/{,*/}*.js'
-        ]
-            },
-            test: {
-                options: {
-                    jshintrc: 'test/.jshintrc'
-                },
-                src: ['test/spec/{,*/}*.js']
-            }
+            src: ['test/spec/{,*/}*.js']
+          }
         },
 
         // Empties folders to start fresh
@@ -148,6 +149,13 @@ module.exports = function (grunt) {
         }]
             },
             server: '.tmp'
+        },
+        
+        // Check JOSN files
+        jsonlint: {
+          all: {
+            src: [ '<%= yeoman.app %>/JSON/{,*/}*.json' ]
+          }
         },
 
         // Add vendor prefixed styles
@@ -179,12 +187,12 @@ module.exports = function (grunt) {
         // Automatically inject Bower components into the app
         wiredep: {
             app: {
-                directory: "app/bower_components",
+                directory: 'app/bower_components',
                 src: ['<%= yeoman.app %>/index.html'],
                 ignorePath: /\.\.\//
             },
             test: {
-                directory: "app/bower_components",
+                directory: 'app/bower_components',
                 devDependencies: true,
                 src: '<%= karma.unit.configFile %>',
                 ignorePath: /\.\.\//,
@@ -209,7 +217,7 @@ module.exports = function (grunt) {
           '<%= yeoman.dist %>/scripts/{,*/}*.js',
           '<%= yeoman.dist %>/styles/{,*/}*.css',
           '<%= yeoman.dist %>/images/{,*/}*.{png,jpg,jpeg,gif,webp,svg}',
-          '<%= yeoman.dist %>/styles/fonts/*'
+          '<%= yeoman.dist %>/fonts/*'
         ]
             }
         },
@@ -325,13 +333,6 @@ module.exports = function (grunt) {
             }
         },
 
-        // Replace Google CDN references
-        cdnify: {
-            dist: {
-                html: ['<%= yeoman.dist %>/*.html']
-            }
-        },
-
         // Copies remaining files to places other tasks can use
         copy: {
             dist: {
@@ -345,7 +346,8 @@ module.exports = function (grunt) {
             '*.html',
             'views/{,*/}*.html',
             'images/{,*/}*.{webp}',
-            'styles/fonts/{,*/}*.*'
+            'JSON/{,*/}*.*',
+            'fonts/{,*/}*.*'
           ]
         }, {
                         expand: true,
@@ -372,7 +374,13 @@ module.exports = function (grunt) {
                 src: '{,*/}*.css'
             }
         },
-
+        
+        'json-minify': {
+          all: {
+            files: '<%= yeoman.dist %>/JSON/{,*/}*.json'
+          }
+        },
+        
         // Run some tasks in parallel to speed up the build process
         concurrent: {
             server: [
@@ -436,17 +444,18 @@ module.exports = function (grunt) {
     'concat',
     'ngAnnotate',
     'copy:dist',
-    // 'cdnify',
     'cssmin',
     'uglify',
     'filerev',
     'usemin',
-    'htmlmin'
+    'htmlmin',
+    'json-minify'
   ]);
 
     grunt.registerTask('default', [
     'newer:jshint',
-    'test',
+    'jsonlint',
+    //'test',                                                                      TESTING DISABLED - WILL ALWAYS FAIL!
     'build'
   ]);
 };

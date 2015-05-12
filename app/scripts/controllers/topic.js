@@ -8,10 +8,11 @@
  * Controller of the tekForumApp
  */
 angular.module('tekForumApp')
-    .controller('TopicCtrl', function ($scope, $routeParams, FactoryTopic, FormatHTML) {
+    .controller('TopicCtrl', function ($scope, $rootScope, $routeParams, FactoryUserStorage, FactoryTopic, FormatHTML) {
         // set loading flag
         $scope.busyLoadingData = false;
-
+        $scope.userPrefs = FactoryUserStorage.user.prefs;
+    
         /**
          * Initializes the controller, and formats the html content on load
          * @method init
@@ -19,13 +20,36 @@ angular.module('tekForumApp')
          **/
         var init = function () {
             FactoryTopic.get($routeParams.id).success(function (data) {
+                $.each(data.post_stream.posts, function (key, value) {
+                    data.post_stream.posts[key].cooked = FormatHTML.format(value.cooked);
+                });
                 $scope.topic = data;
+//                console.log(data);
                 $scope.postCount = data.post_stream.posts.length;
                 $scope.MAXPOSTCOUNT = data.posts_count;
-                FormatHTML.format();
+                $rootScope.customNav.scope.maxpostcount = data.posts_count;
+                $rootScope.customNav.scope.scrolledPost = '';
+                $rootScope.customNav.scope.scrollFormInvalid = false;
+                $rootScope.customNav.url = 'views/nav-topic.html';
             });
         };
-
+        
+        $scope.scrollPost = function(postNumber, form) {
+            if (form && !isNaN(postNumber) && postNumber > 0) {
+//                console.log('post-' + postNumber);
+                $rootScope.customNav.scope.scrollFormInvalid = false;
+                angular.element(document.getElementsByClassName('infinite')).scrollToElementAnimated(angular.element(document.getElementById('post-' + postNumber)), 0, 750);
+                $rootScope.HideMenu();
+            }
+            else if (form) {
+                $rootScope.customNav.scope.scrollFormInvalid = true;
+            }
+            else if (!form) {
+                angular.element(document.getElementsByClassName('infinite')).scrollToElementAnimated(angular.element(document.getElementById('post-' + postNumber)), 0, 750);
+            }
+        };
+        $rootScope.customNav.scope.scrollPost = $scope.scrollPost;
+        
         /**
          * Called when nearing bottom of the page, looks for more posts, if available
          * @method FetchPosts
@@ -33,14 +57,13 @@ angular.module('tekForumApp')
         $scope.FetchPosts = function () {
             if ($scope.postCount < $scope.MAXPOSTCOUNT) {
                 $scope.busyLoadingData = true;
-                $('.infinite-scroll').addClass
                 var request = '',
                     requestAttach = '';
                 // build array of post ids to fetch
                 for (var i = 0; i < 20; i++) {
                     // if target id exists push into fetch array, otherwise exit loop
                     if ($scope.topic.post_stream.stream[i + $scope.postCount]) {
-                        if (i == 1) {
+                        if (i === 1) {
                             requestAttach = '&';
                         }
                         request = request +
@@ -55,10 +78,13 @@ angular.module('tekForumApp')
 
                 // fetch posts and add to posts array
                 FactoryTopic.getPosts($scope.topic.id, request).success(function (data) {
-                    $scope.busyLoadingData = true;
+                    $scope.busyLoadingData = false;
+//                    console.log(data.post_stream.posts);
+                    $.each(data.post_stream.posts, function (key, value) {
+                        data.post_stream.posts[key].cooked = FormatHTML.format(value.cooked);
+                    });
                     $scope.topic.post_stream.posts.push.apply($scope.topic.post_stream.posts, data.post_stream.posts);
-                    FormatHTML.format();
-                })
+                });
             }
         };
         init();

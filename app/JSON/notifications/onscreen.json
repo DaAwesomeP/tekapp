@@ -1,0 +1,19 @@
+[
+  {
+    "id": 0,
+    "type": "error",
+    "style": "danger",
+    "dissmissable": false,
+    "title": "Disconnected",
+    "text": "No network connection"
+  },
+  {
+    "id": 1,
+    "type": "info",
+    "style": "info",
+    "dissmissable": true,
+    "title": "Offline Mode Enabled",
+    "text": "Set by either 'Enable Offline Mode' or 'WiFi Only' in settings"
+  }
+  
+]

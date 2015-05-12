@@ -1,0 +1,12 @@
+{
+  "token": null,
+  "loggedIn": false,
+  "username": null,
+  "notificationsCount": 9,
+  "prefs": {
+    "offlineMode": false,
+	"wifiOnly": false,
+    "pushFreq": 60,
+    "PostAndTopicFontSize": 14
+  }
+}

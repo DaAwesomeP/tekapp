@@ -9,4 +9,11 @@
 .img-brand {
     width: auto;
     height: 50px;
+    padding: 5px;
+}
+
+.navmenu,
+.navbar-offcanvas {
+    min-width: 50px !important;
+    overflow-x: hidden;
 }
